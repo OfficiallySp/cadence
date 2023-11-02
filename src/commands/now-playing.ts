@@ -9,7 +9,7 @@ import {buildPlayingMessageEmbed} from '../utils/build-embed.js';
 @injectable()
 export default class implements Command {
   public readonly slashCommand = new SlashCommandBuilder()
-    .setName('now-playing')
+    .setName('playing')
     .setDescription('shows the currently played song');
 
   private readonly playerManager: PlayerManager;

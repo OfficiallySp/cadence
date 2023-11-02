@@ -10,8 +10,8 @@ import durationStringToSeconds from '../utils/duration-string-to-seconds.js';
 @injectable()
 export default class implements Command {
   public readonly slashCommand = new SlashCommandBuilder()
-    .setName('fseek')
-    .setDescription('seek forward in the current song')
+    .setName('ff')
+    .setDescription('fast forward in the current song')
     .addStringOption(option => option
       .setName('time')
       .setDescription('an interval expression or number of seconds (1m, 30s, 100)')
@@ -55,6 +55,6 @@ export default class implements Command {
       interaction.deferReply(),
     ]);
 
-    await interaction.editReply(`👍 seeked to ${prettyTime(player.getPosition())}`);
+    await interaction.editReply(`⏩ skipped forward ${prettyTime(player.getPosition())}`);
   }
 }

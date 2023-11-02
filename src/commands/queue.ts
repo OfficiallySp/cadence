@@ -9,7 +9,7 @@ import {buildQueueEmbed} from '../utils/build-embed.js';
 @injectable()
 export default class implements Command {
   public readonly slashCommand = new SlashCommandBuilder()
-    .setName('queue')
+    .setName('q')
     .setDescription('show the current queue')
     .addIntegerOption(option => option
       .setName('page')
