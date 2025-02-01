@@ -15,13 +15,14 @@ import YoutubeAPI from './services/youtube-api.js';
 import SpotifyAPI from './services/spotify-api.js';
 
 // Commands
-import Command from './commands';
+import Command from './commands/index.js';
 import Clear from './commands/clear.js';
 import Config from './commands/config.js';
 import Disconnect from './commands/disconnect.js';
 import Favorites from './commands/favorites.js';
 import ForwardSeek from './commands/fseek.js';
-import Loop from './commands/loop';
+import LoopQueue from './commands/loop-queue.js';
+import Loop from './commands/loop.js';
 import Move from './commands/move.js';
 import Next from './commands/next.js';
 import NowPlaying from './commands/now-playing.js';
@@ -36,6 +37,7 @@ import Shuffle from './commands/shuffle.js';
 import Skip from './commands/skip.js';
 import Stop from './commands/stop.js';
 import Unskip from './commands/unskip.js';
+import Volume from './commands/volume.js';
 import ThirdParty from './services/third-party.js';
 import FileCacheProvider from './services/file-cache.js';
 import KeyValueCacheProvider from './services/key-value-cache.js';
@@ -55,11 +57,20 @@ container.bind<Client>(TYPES.Client).toConstantValue(new Client({intents}));
 // Managers
 container.bind<PlayerManager>(TYPES.Managers.Player).to(PlayerManager).inSingletonScope();
 
+// Config values
+container.bind(TYPES.Config).toConstantValue(new ConfigProvider());
+
 // Services
 container.bind<GetSongs>(TYPES.Services.GetSongs).to(GetSongs).inSingletonScope();
 container.bind<AddQueryToQueue>(TYPES.Services.AddQueryToQueue).to(AddQueryToQueue).inSingletonScope();
 container.bind<YoutubeAPI>(TYPES.Services.YoutubeAPI).to(YoutubeAPI).inSingletonScope();
-container.bind<SpotifyAPI>(TYPES.Services.SpotifyAPI).to(SpotifyAPI).inSingletonScope();
+
+// Only instanciate spotify dependencies if the Spotify client ID and secret are set
+const config = container.get<ConfigProvider>(TYPES.Config);
+if (config.SPOTIFY_CLIENT_ID !== '' && config.SPOTIFY_CLIENT_SECRET !== '') {
+  container.bind<SpotifyAPI>(TYPES.Services.SpotifyAPI).to(SpotifyAPI).inSingletonScope();
+  container.bind(TYPES.ThirdParty).to(ThirdParty);
+}
 
 // Commands
 [
@@ -68,6 +79,7 @@ container.bind<SpotifyAPI>(TYPES.Services.SpotifyAPI).to(SpotifyAPI).inSingleton
   Disconnect,
   Favorites,
   ForwardSeek,
+  LoopQueue,
   Loop,
   Move,
   Next,
@@ -83,16 +95,12 @@ container.bind<SpotifyAPI>(TYPES.Services.SpotifyAPI).to(SpotifyAPI).inSingleton
   Skip,
   Stop,
   Unskip,
+  Volume,
 ].forEach(command => {
   container.bind<Command>(TYPES.Command).to(command).inSingletonScope();
 });
 
-// Config values
-container.bind(TYPES.Config).toConstantValue(new ConfigProvider());
-
 // Static libraries
-container.bind(TYPES.ThirdParty).to(ThirdParty);
-
 container.bind(TYPES.FileCache).to(FileCacheProvider);
 container.bind(TYPES.KeyValueCache).to(KeyValueCacheProvider);
 

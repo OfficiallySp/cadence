@@ -1,7 +1,7 @@
 import {inject, injectable} from 'inversify';
 import {toSeconds, parse} from 'iso8601-duration';
 import got, {Got} from 'got';
-import ytsr, {Video} from 'ytsr';
+import ytsr, {Video} from '@distube/ytsr';
 import PQueue from 'p-queue';
 import {SongMetadata, QueuedPlaylist, MediaSource} from './player.js';
 import {TYPES} from '../types.js';
@@ -74,7 +74,7 @@ export default class {
   }
 
   async search(query: string, shouldSplitChapters: boolean): Promise<SongMetadata[]> {
-    const {items} = await this.ytsrQueue.add(async () => this.cache.wrap(
+    const result = await this.ytsrQueue.add<ytsr.VideoResult>(async () => this.cache.wrap(
       ytsr,
       query,
       {
@@ -85,9 +85,13 @@ export default class {
       },
     ));
 
+    if (result === undefined) {
+      return [];
+    }
+
     let firstVideo: Video | undefined;
 
-    for (const item of items) {
+    for (const item of result.items) {
       if (item.type === 'video') {
         firstVideo = item;
         break;
@@ -95,7 +99,7 @@ export default class {
     }
 
     if (!firstVideo) {
-      throw new Error('No video found.');
+      return [];
     }
 
     return this.getVideo(firstVideo.url, shouldSplitChapters);
